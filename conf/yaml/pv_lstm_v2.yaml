@@ -1,0 +1,67 @@
+seed: 123
+name: "pv_timeseries_lstm_v2"
+algorithm: "ANIL" # "ANIL" or "MAML"
+lightning: true
+device: "cuda"
+meta_training_iter: 3 # ~150 at least for results
+validate_every: 2
+first_order: true # always "true" for MAML -> FOMAML
+adaptation_steps: 5
+print_meta_val: true
+meta_lr: 0.0001
+fast_lr: 0.01
+inner_batch_size: null
+
+trainer_config:
+  accelerator:  "auto"
+  devices: 1
+  num_sanity_val_steps: 0
+  limit_train_batches: 800
+  # limit_val_batches: 10
+  # limit_test_batches: 10
+
+checkpoint_freq:    5
+keep_checkpoints:   3
+checkpoint_to_load: null
+
+data_config:
+  name: "PVTimeSeries"
+  # train_ratio: 0.7
+  config:
+    excluded_plants_txt: "output/nan_audit/excluded_plants.txt"  
+    plants_dir:       "/mnt/data/kes/data/jdomingo/plants_clean"
+    look_back_steps:  288        # 15-min intervals
+    look_ahead_steps: 96         # 15-min intervals
+    window_stride: 4       
+    train_ratio:      0.7
+    max_windows_train:  15        # cap per task — controls epoch time
+    max_windows_test:   20
+
+model_config:
+  name: "LSTMRegressor"
+  config:
+    input_size:  13     # 7 NWP + 6 engineered (solar + time)
+    hidden_size: 32
+    num_layers:  1
+    output_size: 1      # regression. No quantiles needed
+    look_ahead:  96
+    dropout:     0.2
+
+task_sampler_config:
+  name: "PVTimeSeriesV2"
+  config:
+    N:           5 # batch_size
+    N_val:       1
+    N_test:      1
+    splits:      [0.7, 0.15, 0.15]
+    num_workers: 2
+
+loss_config:
+  name: "MSE"
+
+metrics_config:
+  name:           "Regression"
+  metric_keys:    ["losses", "mae"]
+  generalization: false
+  print_results:  true
+  sample_efficiency: false

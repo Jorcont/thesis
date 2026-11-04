@@ -1,0 +1,56 @@
+seed: 42
+algorithm: "ANIL"
+lightning: True
+device: "cuda" #TODO: Does not work with CPU because of different used devices
+meta_training_iter: 10
+validate_every: 5
+checkpoint_dir: "<output>/Audio_from_Scratch/checkpoints"
+keep_checkpoints: 2
+checkpoint_freq: 5
+
+trainer_config:
+  devices: 3
+
+task_sampler_config:
+  name: "PrototypeLearning"
+  config:
+    N: 7
+    N_val: 4
+    N_test: 5
+    num_workers: 5
+    splits: [0.8, 0.1, 0.1]
+
+data_config:
+  name: "Audio"
+  config:
+    data_path: "ashraq/esc50"
+    m_way: 3
+    K_shots: 10
+    input_name: "audio"
+    label_name: "target"
+
+task_config:
+  name: "PrototypeLearning"
+
+loss_config:
+  name: "PrototypeLoss"
+  config:
+    # Contains itself another loss:
+    basic_loss_config:
+      name: "CrossEntropy"
+      config:
+        ignore_index: -100
+        label_smoothing: 0.0
+
+model_config:
+  name: "ProtoPNet"
+  config:
+    prototype_shape:
+      num_prototypes: 2055
+      channels: 1024 # Must be same as embedded size of backbone model
+      height: 1
+      width: 1
+    backbone_config:
+      name: "ConvNext"
+      config:
+        num_channels: 1

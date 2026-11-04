@@ -1,0 +1,10 @@
+name: meta-netze
+channels:
+  - conda-forge
+  - pytorch
+  - nvidia
+
+dependencies:
+  - python=3.10
+  - ffmpeg=6
+  - pip

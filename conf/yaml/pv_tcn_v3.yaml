@@ -1,0 +1,70 @@
+seed: 123
+name: "pv_timeseries_tcn_v2"
+algorithm: "ANIL" # "ANIL" or "MAML"
+lightning: true
+device: "cuda"
+meta_training_iter: 1
+validate_every: 1
+first_order: true
+adaptation_steps: 5
+print_meta_val: true
+meta_lr:   0.000001     
+fast_lr:   0.0001     
+inner_batch_size: null
+
+trainer_config:
+  accelerator:  "auto"
+  devices: 1
+  num_sanity_val_steps: 1
+  limit_train_batches:      500    # ← hard cap: 500 steps/epoch regardless of dataset size
+  limit_val_batches:        100    # ← same for validation
+  limit_test_batches:       100
+
+checkpoint_freq:    5
+keep_checkpoints:   3
+checkpoint_to_load: null
+
+data_config:
+  name: "PVTimeSeries"
+  # train_ratio: 0.7
+  config:
+    excluded_plants_txt: "output/nan_audit/excluded_plants.txt"
+    plants_dir:       "/mnt/data/kes/data/jdomingo/plants_clean"
+    look_back_steps:  24        # 15min intervals
+    look_ahead_steps: 24        # 15min intervals
+    train_ratio:      0.7
+    max_windows_train:    335        # cap per task — controls epoch time
+    max_windows_test:     150
+
+model_config:
+  name: "TCNRegressor"
+  config:
+    input_size:  15     # 7 NWP + 6 engineered (solar + time) — FEATURE_COLS
+    n_filters:   64     # channel width;
+    kernel_size: 3      # must be odd — symmetric non-causal padding
+    n_blocks:    6      # dilation: 1,2,4,8,16,32 → RF=253 > look_back=96
+    dropout:     0.1    # paired with LayerNorm — stable at any batch size
+    look_back:   96     # 15-min intervals
+    look_ahead:  96     # 15-min intervals
+    output_size: 1      # point forecast (NO QUANTILE)
+
+loss_config:
+  name: "TCNHuberLoss"  # swap to "TCNMSELoss" to compare
+  config:
+    delta: 1.0          # tune to ~5% of plant peak_power_kW if needed
+
+task_sampler_config:
+  name: "PVTimeSeriesV2"
+  config:
+    N:           5 # batch sizes
+    N_val:       1
+    N_test:      1
+    splits:      [0.9, 0.05, 0.05]
+    num_workers: 4
+
+metrics_config:
+  name:           "Regression"
+  metric_keys:    ["losses", "mae"]
+  generalization: false
+  print_results:  true
+  sample_efficiency: false

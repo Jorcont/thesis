@@ -1,0 +1,26 @@
+seed: 42
+lightning: True
+device: "cuda"
+meta_training_iter: 10
+validate_every: 5
+
+trainer_config:
+  devices: 1
+
+task_sampler_config:
+  name: "TimeSeries"
+  config:
+    N: 3
+    splits: [0.4, 0.3, 0.3]
+
+metrics_config:
+  metric_keys: ['losses', 'accuracy']
+
+data_config:
+  name: "TimeSeries"
+
+loss_config:
+  name: "L1"
+
+model_config:
+  name: "TFT"

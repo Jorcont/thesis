@@ -1,0 +1,102 @@
+adaptation_steps: 2
+algorithm: MAML
+baseline: true
+checkpoint_freq: 1000          # praktisch deaktiviert für den Smoke-Test
+checkpoint_to_load:
+data_config:
+  config:
+    excluded_plants_txt: ""
+    gap: 288
+    look_ahead_steps: 96
+    look_back_steps: 288
+    max_windows_test: 100
+    max_windows_train: 100     # klein halten -> schnell, RAM-sicher
+    max_windows_val: 100
+    plants_dir: data/PV_data_smoke   # ← nur ~50 Plants
+    random_sampling: false
+    theta_query: 0.5
+    theta_support: 0.5
+    time_varying_known_reals:
+    - WIND_DEGREES_40M_SIN
+    - WIND_DEGREES_40M_COS
+    - PRESSURE_SURFACE
+    - DIRECT_HORIZONTAL_IRRADIANCE
+    - WIND_SPEED_40M
+    - TEMPERATURE_2METER_ABOVE_GROUND
+    - HUMIDITY_RELATIVE
+    - DIFFUSE_HORIZONTAL_IRRADIANCE
+    - SOLAR_ELEVATION
+    - SOLAR_AZIMUTH_SIN
+    - SOLAR_AZIMUTH_COS
+    - TIME_OF_DAY_SIN
+    - TIME_OF_DAY_COS
+    - DAY_OF_YEAR_SIN
+    - DAY_OF_YEAR_COS
+    time_varying_unknown_reals:
+    - active_power_kW
+    train_ratio: 0.5
+    use_pf_tft: false
+    window_stride: 12
+  name: PVTimeSeries
+device: cpu
+fast_lr: 0.023961758985827857
+first_order: true
+grad_hist_every_n_steps: 1000
+grad_log_every_n_steps: 50
+inner_batch_size:
+keep_checkpoints: 1
+lightning: true
+log_grad_histograms: false
+logging_level: DEBUG
+loss_config:
+  config:
+    median_only: false
+    quantiles:
+    - 0.1
+    - 0.5
+    - 0.9
+  name: Quantile
+meta_lr: 0.0002784478709167946
+meta_training_iter: 2           # nur 2 Epochen
+print_meta_val: true
+metrics_config:
+  generalization: false
+  metric_keys:
+  - losses
+  - mae
+  - mse
+  - rmse
+  name: Regression
+  print_results: true
+  sample_efficiency: false
+model_config:
+  config:
+    dec_size: 7
+    dropout: 0.02016761990177476
+    enc_size: 15
+    hidden_size: 32
+    look_ahead: 96
+    num_heads: 8
+    num_layers: 1
+    output_size: 3
+  name: TFTRegressor
+name: smoke_test_baseline
+seed: 82
+task_sampler_config:
+  name: "PVTimeSeriesV2"
+  config:
+    N_train: 10
+    num_workers: 2             # ← bewusst > 0, um den Fix zu testen
+    windows_per_step: 200      # klein -> wenige Batches, schnell
+    N_val: 1
+    N_test: 1
+    splits: [0.8, 0.1, 0.1]
+trainer_config:
+  accelerator: cuda
+  devices: 1
+  limit_train_batches: 3      # nur 3 Steps pro Epoche
+  limit_val_batches: 2
+  num_sanity_val_steps: 0
+validate_every: 1
+weight_decay: 2.535722268014521e-06
+zero_target_threshold: 0.001

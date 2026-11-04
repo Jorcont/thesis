@@ -1,0 +1,103 @@
+seed: 123
+name: "pv_timeseries_tft"
+algorithm: "MAML"
+lightning: true
+device: "cuda" # "cpu" for local runs and "cuda" for global runs
+meta_training_iter: 100 # increase to 50 for real results
+validate_every: 10
+#inner_batch_size: 16
+first_order: true    # FOMAML: cuDNN LSTM does not support double backwards
+adaptation_steps: 15   # To be uncommented for real runs
+
+trainer_config:
+  devices: 1 # could increase to 2, but not very relevant
+
+checkpoint_freq:    5        # save every 5 epochs
+keep_checkpoints:   3        # keep last 3 checkpoints
+checkpoint_to_load: null     # set to filename to resume, e.g. "epoch=4.ckpt"
+
+data_config:
+  name: "PVTimeSeries"
+  #train_ratio: 0.7 # TODO: Why do we keep it still here??? Move it to split
+  config:
+    data_path:        "data/PV_data/"
+    look_back_hours:  72
+    look_ahead_hours: 24
+    samples_per_hour: 4
+    interpolate:      true
+    align_time:       true
+    # ── Calendar-window sampling (K — key experimental dimension) ──────
+    # support_hours defines the calendar budget for task-level adaptation.
+    # Sweep this to answer: how much data does fast adaptation need?
+    #   168h = 1 week    →  289 possible windows in support slice
+    #   336h = 2 weeks   →  673 possible windows
+    #   720h = 1 month   → 2497 possible windows
+    #
+    # max_windows caps how many windows are actually drawn from that slice.
+    # This separates two independent concerns:
+    #   support_hours → WHICH seasonal context the model adapts on
+    #   max_windows   → HOW MANY windows are used (controls epoch time)
+    #
+    # Without max_windows: support_hours=720 → 2497 windows → ~830s/epoch
+    # With    max_windows: support_hours=720 → 45   windows → ~15s/epoch
+    support_hours: 720      # K — adaptation calendar budget  (sweep this)
+    query_hours:   720      # evaluation calendar budget (can be > support_hours)
+    max_windows:   45       # cap per calendar slice — keeps epoch time ~15s
+    num_episodes:  30       # random calendar windows sampled per plant per epoch
+
+    # ── Legacy mode only (support_hours: null) ─────────────────────────
+    # train_ratio is only used when support_hours is not set.
+    # In calendar mode the support/query split is determined by the
+    # calendar boundary (support_hours / query_hours), not by this ratio.
+    train_ratio: 0.7
+
+    target: ["target"]
+    # NWP: Numerical Weather Prediction
+    # Known in advance: NWP forecasts (pattern_ files = forecasts)
+    # + calendar features added by PVPreprocessor._add_time_features()
+    time_varying_known_reals:
+      - "time_idx"                          # integer step — always known
+      - "hour_sin"                          # cyclic time-of-day
+      - "hour_cos"
+      - "day_sin"                           # cyclic day-of-year
+      - "day_cos"
+      - "month"                             # calendar month
+      - "GLOBAL_HORIZONTAL_IRRADIANCE"      # NWP → known in advance
+      - "TEMPERATURE_2METER_ABOVE_GROUND"   # NWP → known in advance
+      - "WIND_SPEED_40M"                    # NWP → known in advance
+
+    # NOT known for future steps: actual PV output only
+    time_varying_unknown_reals:
+      - "target"
+
+model_config:
+  name: "TFTRegressor"
+  config:
+    enc_size:    9
+    dec_size:    9
+    hidden_size: 128 # increase 64
+    num_heads:   4
+    num_layers:  2 # increase to 2
+    dropout:     0.1
+    look_ahead:  96
+    output_size: 3      # n_quantiles
+
+loss_config:
+  name: "Quantile"
+  config:
+    quantiles:    [0.1, 0.5, 0.9]
+    median_only:  false
+
+task_sampler_config:
+  name: "PVTimeSeries"
+  config:
+    N:           15 # meta-batch size --> inner loops
+    splits:      [0.7, 0.15, 0.15] # consider changing this to [0.6, 0.2, 0.2] More validation
+    #support_ratio: 0.7
+    num_workers: 4 # increase num_workers to 4 or so!!!
+
+metrics_config:
+  name:           "Regression"
+  metric_keys:    ["losses", "mae"]
+  generalization: false
+  print_results:  true

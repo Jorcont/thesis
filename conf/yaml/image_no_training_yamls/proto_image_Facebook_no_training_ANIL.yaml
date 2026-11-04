@@ -1,0 +1,58 @@
+seed: 42
+name: "Proto_SmallCNN_ANIL"
+algorithm: "ANIL"
+lightning: True
+device: "cuda" #TODO: Does not work with CPU because of different used devices
+meta_training_iter: 0
+validate_every: 0
+load_dir: "/mnt/data/kes/data/ldorsch/meta-netze/output/Proto_SmallCNN_ANIL/checkpoints"
+checkpoint_to_load: "epoch=559-step=1120.ckpt"
+
+trainer_config:
+  devices: 1
+
+metrics_config:
+  metric_keys: ['losses', 'accuracy', 'precision', 'recall', 'F1']
+
+task_sampler_config:
+  name: "PrototypeLearning"
+  config:
+    N: 7
+    num_workers: 2
+    splits: [0.8, 0.1, 0.1]
+
+data_config:
+  name: "Image"
+  config:
+    data_path: "uoft-cs/cifar100"
+    m_way: 3
+    K_shots: 10
+    input_name: "img"
+    label_name: "fine_label"
+
+loss_config:
+  name: "PrototypeLoss"
+  config:
+    # Contains itself another loss:
+    basic_loss_config:
+      name: "CrossEntropy"
+      config:
+        ignore_index: -100
+        label_smoothing: 0.0
+
+model_config:
+  name: "ProtoPNet"
+  config:
+    prototype_shape:
+      num_prototypes: 2055
+      channels: 320 # Must be same as embedded size of backbone model
+      height: 1
+      width: 1
+    backbone_config:
+      name: "ConvNext"
+      config:
+        num_channels: 3
+        embedding_size: 320
+        #checkpoint: "facebook/convnextv2-atto-1k-224" # Small model
+        #local_checkpoint: False
+        backbone_mode: True

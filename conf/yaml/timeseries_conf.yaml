@@ -1,0 +1,50 @@
+seed: 42
+name: "timeseries"
+algorithm: "RL2"
+lightning: True
+device: "cuda"
+meta_training_iter: 5
+validate_every: 2
+
+trainer_config:
+  devices: 1
+
+metrics_config:
+  metric_keys: ['losses']
+
+loss_config:
+  name: "TFT-MAE"
+
+model_config:
+  name: "TFT"
+
+generator_config:
+  name: "Dummy"
+
+task_sampler_config:
+  name: "TimeSeries"
+  config:
+    N: 3 # batch size for loading the data.
+    splits:
+       primary_supply_temp: [0.8, 0.1, 0.1]
+       heat_exchanger_transfer_area: [0.8, 0.1, 0.1]
+       max_primary_mass_flow: [0.8, 0.1, 0.1]
+       building_thermal_resistance: [0.8, 0.1, 0.1]
+       building_thermal_capacity: [0.8, 0.1, 0.1]
+    num_workers: 2
+
+
+# TODO: Add param_ranges {"train" : {}, "val": {}, "test":{}}
+
+# TODO: add the different ratios [train, test, val]
+data_config:
+  name: "TimeSeries"
+  config:
+    # TODO: Start to add the ratios. train_ratio
+    time_idx: "time_step_index"
+    target: "indoor_air_temp"
+    time_varying_known_reals: ["time_seconds"]
+    time_varying_unknown_reals: ["outdoor_air_temp", "primary_return_temp", "valve_opening", "secondary_return_temp", "heat_input_W", "time_step_index", "temp_error"]
+    static_reals: ["primary_supply_temp", "heat_exchanger_transfer_area", "max_primary_mass_flow", "building_thermal_resistance", "building_thermal_capacity", "indoor_temp_setpoint", "heat_loss_W"]
+
+

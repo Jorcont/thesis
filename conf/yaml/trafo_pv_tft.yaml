@@ -1,0 +1,124 @@
+seed: 26
+name: "pv_timeseries_tft_v2"
+algorithm: "ANIL" # "ANIL" or "MAML"
+lightning: true
+device: "cuda"
+meta_training_iter: 200
+validate_every: 1
+first_order: true
+adaptation_steps: 7
+print_meta_val: true
+inner_batch_size: null
+zero_target_threshold: 0.001
+logging_level: "DEBUG"
+baseline: false # keep it false
+
+grad_log_every_n_steps: 50
+grad_hist_every_n_steps: 1000
+log_grad_histograms: false
+
+meta_lr:   0.00005     
+fast_lr:   0.01  # not too large    
+
+# For 
+# fast_lr:
+#   # features:  0.001    # slow adaptation for backbone
+#   head:      0.1      # fast adaptation for classifier
+#   vsn_enc:   0.3
+
+weight_decay: 0.0001
+
+trainer_config:
+  accelerator:  "cuda"
+  devices: 1
+  num_sanity_val_steps: 0
+  limit_train_batches: 400
+  limit_val_batches: 700
+  limit_test_batches: 70
+
+
+checkpoint_freq:    5
+keep_checkpoints:   3
+checkpoint_to_load: null
+
+data_config:
+  name: "PVTimeSeries"
+  config:
+    excluded_plants_txt: "output/nan_audit/excluded_plants.txt"
+    plants_dir:       "data/PV_data_trafo_random"
+    trafo_dir:        "data/trafo_data"
+    trafo_test_only:  true
+    use_trafo_features: true
+
+    look_back_steps:  288        # 15min intervals
+    look_ahead_steps: 96        # 15min intervals
+    train_ratio:      0.3 # support/Squery ratio
+    window_stride:    24
+    gap:              288  # >= look_ahead_steps
+    theta_support:    0.5
+    theta_query:      0.5
+    # They should be of similar range--> NOT SURE
+    max_windows_train: 1500 # can vary
+    max_windows_val:   900 # should be same for test
+    max_windows_test:  900 # should be same for val
+
+    random_sampling:  false
+
+    use_pf_tft:       false
+
+    time_varying_known_reals:
+      - "WIND_DEGREES_40M_SIN"
+      - "WIND_DEGREES_40M_COS"
+      - "PRESSURE_SURFACE"
+      - "DIRECT_HORIZONTAL_IRRADIANCE"
+      - "WIND_SPEED_40M"
+      - "TEMPERATURE_2METER_ABOVE_GROUND"
+      - "HUMIDITY_RELATIVE"
+      - "DIFFUSE_HORIZONTAL_IRRADIANCE"
+      - "SOLAR_ELEVATION"
+      - "SOLAR_AZIMUTH_SIN"
+      - "SOLAR_AZIMUTH_COS"
+      - "TIME_OF_DAY_SIN"
+      - "TIME_OF_DAY_COS"
+      - "DAY_OF_YEAR_SIN"
+      - "DAY_OF_YEAR_COS"
+      - "WIND_DEGREES_100M_SIN"
+      - "WIND_DEGREES_100M_COS"
+      - "WIND_SPEED_100M"
+
+    time_varying_unknown_reals:
+      - "active_power_kW"
+
+model_config:
+  name: "TFTRegressor"
+  config:
+    enc_size:    18     # all 15 features (past window)
+    dec_size:    7      # future-known only (solar + time)
+    hidden_size: 128
+    num_heads:   4
+    num_layers:  1
+    dropout:     0.1
+    look_ahead:  96
+    output_size: 3      # n_quantiles
+
+loss_config:
+  name: "Quantile"
+  config:
+    quantiles:    [0.1, 0.5, 0.9]
+    median_only:  false # keep it false
+
+task_sampler_config:
+  name: "PVTimeSeriesV2"
+  config:
+    N_train:     10 # batch_size
+    N_val:       1
+    N_test:      1
+    splits:      [0.9, 0.1, 0.0]
+    num_workers: 8
+
+metrics_config:
+  name:           "Regression"
+  metric_keys:    ["losses", "mae"]
+  generalization: false
+  print_results:  true
+  sample_efficiency: true

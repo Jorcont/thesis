@@ -1,0 +1,62 @@
+seed: 123
+name: "pv_timeseries_lstm"
+algorithm: "MAML"
+lightning: true
+device: "cuda" # change to "cpu" for local runs or "cuda" for CLUSTER
+meta_training_iter: 200
+validate_every: 10
+first_order: true
+adaptation_steps: 15
+
+trainer_config:
+  devices: 1 # Maybe increase to 2
+
+checkpoint_freq:    5
+keep_checkpoints:   3
+checkpoint_to_load: null
+
+data_config:
+  name: "PVTimeSeries"
+  train_ratio: 0.7
+  config:
+    data_path:        "data/PV_data/"
+    look_back_hours:  72
+    look_ahead_hours: 24
+    samples_per_hour: 4
+    interpolate:      true
+    align_time:       true
+    # ── Calendar-window sampling ───────────────────────────────
+    # Same as TFT — support_hours controls adaptation budget (sweep this)
+    support_hours: 720      # K = 1 month
+    query_hours: 720
+    max_windows: 45       # cap per slice — keeps epoch ~15s
+    num_episodes: 30       # random calendar windows per plant per epoch
+
+    # Legacy fallback only (support_hours: null)
+    train_ratio: 0.7
+
+model_config:
+  name: "LSTMRegressor"
+  config:
+    input_size:  3      # len(FEATURES)
+    hidden_size: 128
+    num_layers:  2
+    output_size: 1      # single target: "target"
+    look_ahead:  96
+    dropout:     0.2
+
+task_sampler_config:
+  name: "PVTimeSeries"
+  config:
+    N:           5
+    splits:      [0.7, 0.15, 0.15]
+    num_workers: 4
+
+loss_config:
+  name: "MSE"
+
+metrics_config:
+  name:           "Regression"
+  metric_keys:    ["losses", "mae"]
+  generalization: false
+  print_results:  true

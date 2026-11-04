@@ -1,0 +1,113 @@
+seed: 123
+name: "pv_pf_tft_v2"
+algorithm: "ANIL" # ANIL or MAML
+lightning: true
+device: "cuda"
+meta_training_iter: 2
+validate_every: 2
+first_order: true
+adaptation_steps: 5
+print_meta_val: false
+meta_lr:   0.00001
+fast_lr:   0.01 # 0.2 or 0.3
+
+# Useful for MAML and/or different parts of architecture
+# fast_lr:
+#   features:  0.001    # slow adaptation for backbone
+#   head:      0.1      # fast adaptation for classifier
+
+baseline: true
+weight_decay: 0.00001
+inner_batch_size: null
+
+trainer_config:
+  accelerator:  "cuda"
+  devices: 1
+  num_sanity_val_steps: 0
+  limit_train_batches: 500
+  limit_val_batches: 500
+  limit_test_batches: 500
+
+checkpoint_freq:    5
+keep_checkpoints:   3
+checkpoint_to_load: "epoch=119-step=24000.ckpt"
+
+data_config:
+  name: "PVTimeSeries"
+  config:
+    excluded_plants_txt: "output/nan_audit/excluded_plants.txt"
+    plants_dir:       "data/PV_data"
+    look_back_steps:  288 # 96 or 288
+    look_ahead_steps: 96
+    window_stride:    4 
+    train_ratio:      0.7 # support/query split in each task
+    gap:              288  # >= look_ahead_steps
+
+    max_windows_train: 800
+    max_windows_val:   800
+    max_windows_test: 800
+    use_pf_tft:       true 
+
+    time_varying_known_reals:
+      - "WIND_DEGREES_40M_SIN"
+      - "WIND_DEGREES_40M_COS"
+      - "PRESSURE_SURFACE"
+      - "DIRECT_HORIZONTAL_IRRADIANCE"
+      - "WIND_SPEED_40M"
+      - "TEMPERATURE_2METER_ABOVE_GROUND"
+      - "HUMIDITY_RELATIVE"
+      - "DIFFUSE_HORIZONTAL_IRRADIANCE"
+      - "SOLAR_ELEVATION"
+      - "SOLAR_AZIMUTH_SIN"
+      - "SOLAR_AZIMUTH_COS"
+      - "TIME_OF_DAY_SIN"
+      - "TIME_OF_DAY_COS"
+      - "DAY_OF_YEAR_SIN"
+      - "DAY_OF_YEAR_COS"
+
+    time_varying_unknown_reals:
+      - "active_power_kW"
+
+    mapping_path: "data/plant_nwp_mapping.parquet"
+
+    static_reals:
+      - "LATITUDE"
+      - "LONGITUDE"
+
+model_config:
+  name: "PF_TFT"
+  config:
+    hidden_size:            64
+    attention_head_size:    4
+    dropout:                0.2
+    hidden_continuous_size: 16
+    output_size:            3       # quantiles [0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95]
+    learning_rate:          0.001   # placeholder — overridden by meta_lr
+    max_encoder_length:     288
+    max_prediction_length:  96
+    n_static_reals:         2
+    
+loss_config:
+  name: "Quantile"
+  config:
+    quantiles: [0.1,0.5,0.9]
+    median_only: true
+
+task_sampler_config:
+  name: "PVTimeSeriesV2"
+  config:
+    N_train:           10 # batch_size
+    N_val:       5
+    N_test:      5
+    splits:      [0.9, 0.05, 0.05]
+    num_workers: 8
+
+metrics_config:
+  name:           "Regression"
+  metric_keys:    ["losses", "mae"]
+  generalization: false
+  print_results:  true
+
+  # If this true --> switch to MAML!!
+  sample_efficiency: false 
+  # false: fast validation || true: sample efficiency curve

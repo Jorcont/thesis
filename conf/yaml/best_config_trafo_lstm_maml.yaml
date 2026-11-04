@@ -1,0 +1,86 @@
+adaptation_steps: 5
+algorithm: MAML
+baseline: false
+checkpoint_freq: 5
+checkpoint_to_load: epoch=69-step=14000.ckpt
+data_config:
+  config:
+    excluded_plants_txt: output/nan_audit/excluded_plants.txt
+    gap: 288
+    look_ahead_steps: 96
+    look_back_steps: 288
+    max_windows_test: 500
+    max_windows_train: 500
+    plants_dir: data/PV_data
+    random_sampling: false
+    theta_query: 0.5
+    theta_support: 0.5
+    trafo_dir: data/trafo_data
+    trafo_test_only: true
+    train_ratio: 0.5
+    use_pf_tft: false
+    use_trafo_features: false
+    window_stride: 12
+  name: PVTimeSeries
+device: cpu
+fast_lr: 0.06881018198285573
+first_order: true
+grad_hist_every_n_steps: 1000
+grad_log_every_n_steps: 50
+inner_batch_size:
+keep_checkpoints: 3
+lightning: true
+load_dir: output/pv_timeseries_lstm_v2_best_maml_metalearn_seed66/checkpoints
+log_grad_histograms: false
+logging_level: DEBUG
+loss_config:
+  config:
+    median_only: false
+    quantiles:
+    - 0.1
+    - 0.5
+    - 0.9
+  name: Quantile
+meta_lr: 0.0002494868545658693
+meta_training_iter: 70
+metrics_config:
+  generalization: false
+  metric_keys:
+  - losses
+  - mae
+  - mse
+  - rmse
+  name: Regression
+  print_results: true
+  sample_efficiency: true
+model_config:
+  config:
+    dropout: 0.09840277584640994
+    hidden_size: 128
+    input_size: 15
+    look_ahead: 96
+    num_layers: 2
+    output_size: 3
+  name: LSTMRegressor
+name: pv_timeseries_lstm_v2_best_maml_seed25_trafo_seed25
+print_meta_val: true
+seed: 25
+task_sampler_config:
+  config:
+    N_test: 1
+    N_train: 10
+    N_val: 1
+    num_workers: 8
+    splits:
+    - 0.8
+    - 0.2
+    - 0.0
+  name: PVTimeSeriesV2
+trainer_config:
+  accelerator: cpu
+  devices: 1
+  limit_train_batches: 200
+  num_sanity_val_steps: 0
+validate_every: 5
+weight_decay: 1.6574968694668332e-06
+zero_target_threshold: 0.001

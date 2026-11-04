@@ -1,0 +1,105 @@
+adaptation_steps: 5
+algorithm: RL2
+baseline: false
+checkpoint_freq: 5
+checkpoint_to_load: "epoch=59-step=12000.ckpt"
+data_config:
+  config:
+    excluded_plants_txt: output/nan_audit/excluded_plants.txt
+    gap: 288
+    look_ahead_steps: 96
+    look_back_steps: 288
+    max_windows_test: 500
+    max_windows_train: 500
+    max_windows_val: 500
+    plants_dir: data/PV_data
+    random_sampling: false
+    theta_query: 0.5
+    theta_support: 0.5
+    time_varying_known_reals:
+    - WIND_DEGREES_40M_SIN
+    - WIND_DEGREES_40M_COS
+    - PRESSURE_SURFACE
+    - DIRECT_HORIZONTAL_IRRADIANCE
+    - WIND_SPEED_40M
+    - TEMPERATURE_2METER_ABOVE_GROUND
+    - HUMIDITY_RELATIVE
+    - DIFFUSE_HORIZONTAL_IRRADIANCE
+    - SOLAR_ELEVATION
+    - SOLAR_AZIMUTH_SIN
+    - SOLAR_AZIMUTH_COS
+    - TIME_OF_DAY_SIN
+    - TIME_OF_DAY_COS
+    - DAY_OF_YEAR_SIN
+    - DAY_OF_YEAR_COS
+    time_varying_unknown_reals:
+    - active_power_kW
+    train_ratio: 0.5
+    use_pf_tft: false
+    window_stride: 12
+  name: PVTimeSeries
+device: cpu
+fast_lr: 0.0064608579629296175
+first_order: true
+grad_hist_every_n_steps: 1000
+grad_log_every_n_steps: 50
+inner_batch_size:
+keep_checkpoints: 3
+lightning: true
+log_grad_histograms: false
+logging_level: DEBUG
+loss_config:
+  config:
+    median_only: false
+    quantiles:
+    - 0.1
+    - 0.5
+    - 0.9
+  name: Quantile
+meta_lr: 0.00036151984026682225
+meta_training_iter: 0
+metrics_config:
+  generalization: false
+  metric_keys:
+  - losses
+  - mae
+  - mse
+  - rmse
+  name: Regression
+  print_results: true
+  sample_efficiency: true
+model_config:
+  config:
+    dec_size: 7
+    dropout: 0.34599594142793944
+    enc_size: 15
+    hidden_size: 64
+    look_ahead: 96
+    num_heads: 2
+    num_layers: 1
+    output_size: 3
+  name: TFTRegressor
+name: pv_timeseries_tft_v2_best_rl2_metalearn_seed25
+print_meta_val: true
+seed: 25
+task_sampler_config:
+  config:
+    N_test: 1
+    N_train: 10
+    N_val: 1
+    num_workers: 8
+    splits:
+    - 0.8
+    - 0.1
+    - 0.1
+  name: PVTimeSeriesV2
+trainer_config:
+# limit_test_batches: 200
+# limit_val_batches: 200
+  accelerator: cpu
+  devices: 1
+  limit_train_batches: 200
+  num_sanity_val_steps: 0
+validate_every: 5
+weight_decay: 5.311420437656071e-05
+zero_target_threshold: 0.001

@@ -1,0 +1,25 @@
+seed: 42
+algorithm: "MAML"
+lightning: True
+device: "cuda"
+meta_training_iter: 10
+validate_every: 5
+trainer_config:
+  devices: 1
+task_sampler_config:
+  name: "Grid"
+  config:
+    N: 3
+    splits: [0.4, 0.3, 0.3]
+data_config:
+  name: "Grid"
+  config:
+    data_path: "<project>/data/grids/example_input/"
+task_config:
+  name: "Grid"
+  config:
+    inner_lr: 0.1
+loss_config:
+  name: "L1"
+model_config:
+  name: "Regressor"
