@@ -14,8 +14,6 @@ pip install -r requirements.txt
 conda install pyg -c pyg
 ```
 
-Running the project... (todo, slurm script)
-
 ## Running the project
 To start a meta-learning experiment for a particular use case:
 Create a config yaml file to configure the pipeline, Task, TaskSampler, Loss function and Model objects.
