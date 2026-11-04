@@ -1,49 +1,115 @@
-<<<<<<< HEAD
 # Meta-Netze
-This project aims to provide pipelines for meta-learning and meta-Reinforcement-Learning (meta-RL) respectively. It mainly focusses on task distributions related to energy grids. However, utilizing the pipelines for other task distributions only requires for minor changes, namely child classes for Task and TaskSampler classes.
 
-## Getting started
-To setup the project first clone the repository, then create a virtual environment with python version 3.10 and activate it. 
+Meta-Netze provides configurable pipelines for gradient-based meta-learning, with a focus on the rapid deployment of photovoltaic (PV) power forecasting models.
+
+The project investigates how forecasting models can adapt to new PV sites using limited local data, particularly through Model-Agnostic Meta-Learning (MAML) and Almost No Inner Loop (ANIL).
+
+## Master's Thesis
+
+This repository contains the research code accompanying the master's thesis:
+
+**Meta-Learning for Rapid Deployment of PV Power Forecasting Models. A sample efficiency study**
+
+- **Author:** Jorge Contreras Domingo
+- **Institution:** University of Bochum
+- **Year:** 2026
+
+The thesis studies the sample efficiency of meta-learning for PV power forecasting: how much site-specific data is needed to adapt a forecasting model to a new deployment.
+
+**Thesis document:** TODO — add a link to the thesis PDF or university repository.
+
+## Features
+
+- Gradient-based meta-learning experiments using MAML and ANIL
+- PV power forecasting and adaptation to new sites
+- Sample-efficiency studies with limited adaptation data
+- YAML-based experiment configuration
+- Custom task and task-sampler interfaces
+- PyTorch/PyTorch Lightning-based pipelines using learn2learn
+
+## Getting Started
+
+Clone the repository:
+
+```bash
+git clone https://github.com/Jorcont/thesis.git
+cd thesis
+```
+
+Create and activate a Conda environment with Python 3.10:
+
 ```bash
 conda create --name meta-netze python=3.10
 conda activate meta-netze
 ```
 
-Then install the dependencies from the `requirements.txt` file and install PyG.
+Install the dependencies:
+
 ```bash
 pip install -r requirements.txt
 conda install pyg -c pyg
 ```
 
-## Running the project
-To start a meta-learning experiment for a particular use case:
-Create a config yaml file to configure the pipeline, Task, TaskSampler, Loss function and Model objects.
-The possible config options can be found in the config folder.
+For detailed environment setup and troubleshooting, see the
+[Meta-Netze Wiki](https://github.com/Jorcont/thesis/wiki).
 
-- Task and TaskSampler:
-Configs can be found in "task_config.py".
-Specification is given by their name (as a string), e.g. "Grid" or "HPRegression".
-Each use case requires for a use case specific Task and Tasksampler class, e.g. the GridTask and the GridTaskSampler provided by this Repo.
+## Running an Experiment
 
-- Loss function:
-Configs can be found in "loss_config.py".
+Experiments are configured through YAML files. These specify the task, task sampler, model, loss function, algorithm, and experiment parameters.
 
-- Model:
-Default Models can be found in the "model" folder. However, you are always welcome to include your own model. Just make sure, that forward and backward processing of your model works with the functions used in this Repo. 
-Note: This Repo only supports Pytorch/Pytorch Lightning.
-Note: Model configuration is not debuged yet.
+Before running an experiment, update the dataset paths and configuration settings for your environment.
 
-- Algorithm:
-This Repo is ment to be algorithm-agnostic.
-However, yet the meta-learning pipeline is based on MAML with learn2learn (l2l) package.
-Later versions will have a meta-learning pipeline plus meta-algo specific child classes in "algorithm" folder.
+Example:
 
-## Custom Task and TaskSampler
-To create your own Task and TaskSampler classes:
-1. Name them as MYSpecificNameTask and MySpecificNameTaskSampler and inherit them from TaskSampler and SupervisedLearningTask (RLTask for meta-RL).
-2. Customize task-specific functions like import_data, split_data or make_task so that data generation, data spliting and task generation are adjusted accordingly.
-Note: Functions like fast_adapt or run_testing are not likely to require changes, but you should still check them.
-3. Make sure that losses are returned accordingly, so that meta-model updates can be performed. This might need specific consideration of your model. However, the learn2learn (l2l) package should cover these problems for you.
-=======
-# thesis
->>>>>>> a01dcbc (Initial commit)
+```bash
+python -u main.py conf/yaml/best_config_lstm_maml_baseline_testing.yaml
+```
+
+Select the appropriate configuration for the experiment you want to run.
+
+Detailed configuration instructions and SLURM execution examples are documented in the
+[Meta-Netze Wiki](https://github.com/Jorcont/thesis/wiki).
+
+## Data Availability
+
+Large datasets, training logs, and generated experiment outputs are excluded from this repository.
+
+Running the experiments requires the corresponding datasets and correctly configured data paths. Cloning this repository alone does not provide the complete experimental data.
+
+See the Wiki for data requirements, preprocessing instructions, and the expected directory structure.
+
+## Documentation
+
+Detailed installation, configuration, usage, and development documentation is maintained in the GitHub Wiki:
+
+[Meta-Netze Wiki](https://github.com/Jorcont/thesis/wiki)
+
+The documentation covers:
+
+- Environment setup and dependencies
+- Data preparation and directory structure
+- Experiment configuration
+- Training, adaptation, and evaluation
+- Execution on SLURM clusters
+- Custom tasks, task samplers, models, and losses
+- Known limitations and troubleshooting
+
+## Citation
+
+If you use this code or build on the associated research, please cite:
+
+```bibtex
+@mastersthesis{contrerasdomingo2026metanetze,
+  author = {Contreras Domingo, Jorge},
+  title  = {Meta-Learning for Rapid Deployment of {PV} Power Forecasting Models. A sample efficiency study},
+  school = {University of Bochum},
+  year   = {2026},
+  type   = {Master's Thesis}
+}
+```
+
+## License
+
+TODO — specify the applicable license and add or link the LICENSE file.
+
+Retain any existing license and copyright notices from the original codebase. Third-party dependencies remain subject to their respective licenses.
