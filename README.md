@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Meta-Netze
 This project aims to provide pipelines for meta-learning and meta-Reinforcement-Learning (meta-RL) respectively. It mainly focusses on task distributions related to energy grids. However, utilizing the pipelines for other task distributions only requires for minor changes, namely child classes for Task and TaskSampler classes.
 
@@ -43,3 +44,6 @@ To create your own Task and TaskSampler classes:
 2. Customize task-specific functions like import_data, split_data or make_task so that data generation, data spliting and task generation are adjusted accordingly.
 Note: Functions like fast_adapt or run_testing are not likely to require changes, but you should still check them.
 3. Make sure that losses are returned accordingly, so that meta-model updates can be performed. This might need specific consideration of your model. However, the learn2learn (l2l) package should cover these problems for you.
+=======
+# thesis
+>>>>>>> a01dcbc (Initial commit)
