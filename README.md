@@ -102,7 +102,7 @@ If you use this code or build on the associated research, please cite:
 @mastersthesis{contrerasdomingo2026metanetze,
   author = {Contreras Domingo, Jorge},
   title  = {Meta-Learning for Rapid Deployment of {PV} Power Forecasting Models. A sample efficiency study},
-  school = {University of Bochum},
+  school = {Ruhr-Universit{\"a}t Bochum},
   year   = {2026},
   type   = {Master's Thesis}
 }
