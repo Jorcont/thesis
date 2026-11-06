@@ -11,7 +11,7 @@ This repository contains the research code accompanying the master's thesis:
 **Meta-Learning for Rapid Deployment of PV Power Forecasting Models. A sample efficiency study**
 
 - **Author:** Jorge Contreras Domingo
-- **Institution:** University of Bochum
+- **Institution:** Rühr-University of Bochum
 - **Year:** 2026
 
 The thesis studies the sample efficiency of meta-learning for PV power forecasting: how much site-specific data is needed to adapt a forecasting model to a new deployment.
