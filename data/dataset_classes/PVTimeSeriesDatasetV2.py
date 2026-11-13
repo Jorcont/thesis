@@ -108,9 +108,9 @@ class PVTimeSeriesDatasetV2(SupervisedLearningDataset):
         self.max_windows      = cfg.get("max_windows", None)
         self.gap              = cfg.get("gap", 96) # temporal buffer between support and query (avoid evaluating in seen data, also known as overlapping)
         self.random_sampling  = cfg.get("random_sampling", False) # antoher way of sampling
-        if self.gap < self.look_ahead_steps:
+        if self.gap < self.look_back_steps:
             raise ValueError(f"The gap: {self.gap} between the support and query sets\n" 
-                             f"must be >= {self.look_ahead_steps}: look ahead window\n"
+                             f"must be >= {self.look_back_steps}: look ahead window\n"
                              f"This avoids DATA LEAKAGE and overlapping of sets")
 
         # ── Separate caps for train vs test ───────────────────
