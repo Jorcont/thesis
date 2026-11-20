@@ -62,7 +62,7 @@ Before running an experiment, update the dataset paths and configuration setting
 Example:
 
 ```bash
-python -u main.py conf/yaml/best_config_lstm_maml_baseline_testing.yaml
+python -u main.py conf/yaml/best_config_lstm_maml.yaml
 ```
 
 Select the appropriate configuration for the experiment you want to run.
@@ -104,6 +104,7 @@ If you use this code or build on the associated research, please cite:
   title  = {Meta-Learning for Rapid Deployment of {PV} Power Forecasting Models. A sample efficiency study},
   school = {Ruhr-Universit{\"a}t Bochum},
   year   = {2026},
+  address= {Bochum, Germany},
   type   = {Master's Thesis}
 }
 ```
